@@ -1,5 +1,6 @@
 # encoding=utf-8
 
+import copy
 import io
 from textwrap import dedent
 
@@ -308,10 +309,11 @@ def test_placement_table_box_elements(show_header, show_footer, expected):
     """Ensure box drawing characters correctly positioned."""
 
     table = Table(
-        box=box.ASCII, show_header=show_header, show_footer=show_footer, padding=0
+        box=copy.copy(box.ASCII), show_header=show_header, show_footer=show_footer, padding=0
     )
 
     # content rows indicated by numerals, pure dividers by letters
+    # (copy: table.box.__dict__.update below must not touch the shared box.ASCII)
     table.box.__dict__.update(
         top_left="a",
         top="b",
@@ -361,6 +363,9 @@ def test_placement_table_box_elements(show_header, show_footer, expected):
     print(repr(output))
 
     assert output == expected
+
+    # the shared singleton must survive this test untouched
+    assert box.ASCII.get_row(widths=[1, 2, 3], level="row") == "|-+--+---|"
 
 
 def test_columns_highlight_added_by_add_row() -> None:
